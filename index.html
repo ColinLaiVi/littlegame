@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ColorDiscriminationGame</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+        }
+
+        .colorDiscriminationGame {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(rgb(236, 115, 115), rgb(255, 218, 218));
+        }
+
+        .colorChange {
+            background: linear-gradient(rgb(236, 72, 72), rgb(255, 218, 218));;
+        }
+
+        #main {
+            width: 520px;
+            height: 520px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            background-color: blanchedalmond;
+            box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+        }
+
+        #main>div {
+            width: 220px;
+            height: 220px;
+            cursor: pointer;
+            margin: 20px;
+        }
+
+        .status {
+            position: fixed;
+            width: 200px;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgb(255, 218, 218);
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 10px;
+        }
+
+        .status>div {
+            padding-top: 10px;
+        }
+
+        .status>img {
+            width: 85%;
+            height: 100%;
+            padding: 10px 0;
+            object-fit: contain;
+        }
+
+        #start {
+            width: 100px;
+            height: 50px;
+            position: fixed;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgb(255, 218, 218);
+            cursor: pointer;
+            text-align: center;
+            line-height: 50px;
+            border-radius: 10px;
+            transition: 0.5s;
+        }
+
+        #start:hover {
+            background-color: rgb(253, 188, 188);
+            box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="colorDiscriminationGame">
+        <div id="start" onclick="startGame(2)">開始</div>
+        <div id="main">
+
+        </div>
+        <div class="status">
+            <div class="score">分數 : <span id="score">0</span></div>
+            <img src="./img/b_simple_132_0S.png" alt="">
+            <div class="timer">剩餘時間 : <span id="timeleft"></span></div>
+            <img src="./img/b_simple_132_0S.png" alt="">
+        </div>
+    </div>
+
+    <script>
+        var start = document.querySelector('#start')
+        var main = document.querySelector('#main')
+        var score = document.querySelector('#score')
+        var timeleft = document.querySelector('#timeleft')
+        // 每局遊戲時間限制
+        var timelimit = 10
+        // 紀錄倒數計時器ID的變數
+        var timer
+        // 儲存正確答案的變數
+        var ans
+        // 按下開始遊戲後，更新題目，開始倒數，隱藏開始按鈕
+        function startGame(index) {
+            timer = setInterval(timeruning, 1000)
+            timeleft.innerHTML = timelimit
+            score.innerHTML = 0
+            makeBlock(index)
+            start.style.display = 'none'
+        }
+        // 更新題目用index=要長的方塊矩陣單排數量(index*index)個方塊
+        function makeBlock(index) {
+            // 設定題目區的寬度，讓他可以根據內容的方塊數量改變大小
+            main.style.width = `calc(${index} * 260px)`
+            main.style.height = `calc(${index} * 260px)`
+            // 清空題目區，方便長下一個題目
+            main.innerHTML = ''
+            // blocks=要長的方塊數量
+            var blocks = index * index
+            // 亂數產生答案方塊
+            ans = Math.floor(Math.random() * blocks)
+            // 題目的方塊顏色亂數
+            var r = Math.floor(Math.random() * 128) + 64 //64~191
+            var g = Math.floor(Math.random() * 128) + 64
+            var b = Math.floor(Math.random() * 128) + 64
+            // 根據答題數 改變你的方塊透明度
+            if (parseInt(score.innerHTML) < 10) {
+                var difficulty = 0.3
+            } else if (parseInt(score.innerHTML) < 15) {
+                var difficulty = 0.5
+            } else {
+                var difficulty = 0.8
+            }
+            // 使用for迴圈搭配if else產生方塊、顏色、透明度
+            for (let i = 0; i < blocks; i++) {
+                if (i == ans) {
+                    //樣板字串寫法1
+                    main.innerHTML = main.innerHTML + `
+                    <div
+                        style="background-color:rgb(` + r + `,` + g + `,` + b + `); opacity: ${difficulty};"
+                        onclick="check(${i})"
+                    >
+                    </div>
+                    `
+                } else {
+                    //樣板字串寫法2
+                    main.innerHTML = main.innerHTML + `
+                    <div 
+                        style="background-color:rgb(${r},${g},${b});"
+                        onclick="check(${i})"
+                    >
+                    </div>
+                    `
+                }
+            }
+        }
+        // 檢查玩家有無選擇到正確答案
+        function check(guess) {
+            if (guess == ans) {
+                score.innerHTML = parseInt(score.innerHTML) + 1
+            }
+            // 根據答題數改變方塊數量
+            if (parseInt(score.innerHTML) < 5) {
+                makeBlock(2)
+            } else {
+                makeBlock(3)
+            }
+        }
+        function timeruning() {
+            timeleft.innerHTML = parseInt(timeleft.innerHTML) - 1
+            // 如果timeleft = 0 時間到，遊戲結束
+            if (parseInt(timeleft.innerHTML) == 0) {
+                start.style.display = 'block'
+                clearInterval(timer)
+                main.innerHTML = ''
+                alert(`遊戲結束，你獲得${score.innerHTML}分`)
+            }
+        }
+    </script>
+</body>
+
+</html>
